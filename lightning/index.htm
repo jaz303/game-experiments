@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Lighting</title>
+  <script>
+    function rand(min, max) {
+      return min + (max-min) * Math.random();
+    }
+
+    function init() {
+
+      var canvas  = document.querySelector('#canvas');
+      var ctx     = canvas.getContext('2d');
+      var source  = { x: 100, y: canvas.height / 2 };
+      var target  = null;
+      var on      = false;
+
+      window.ctx = ctx;
+
+      canvas.addEventListener('mousedown', function(evt) {
+        on = true;
+        target = {x: evt.offsetX, y: evt.offsetY};
+      });
+
+      canvas.addEventListener('mousemove', function(evt) {
+        target = {x: evt.offsetX, y: evt.offsetY};
+      });
+
+      canvas.addEventListener('mouseup', function(evt) {
+        on = false;
+      });
+
+      var lastTick = Date.now();
+      window.requestAnimationFrame(function _tick() {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (on) {
+
+          var dy = target.y - source.y;
+          var dx = target.x - source.x;
+
+          var angle = Math.atan2(dy, dx);
+          var length = Math.sqrt(dy*dy + dx*dx);
+
+          ctx.strokeStyle = '#505050';
+
+          ctx.save();
+          
+          ctx.translate(source.x, source.y);
+          ctx.rotate(angle);
+
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(length, 0);
+          ctx.stroke();
+
+          var numberOfLines     = 5,
+              numberOfSegments  = Math.max(Math.floor(length / 60), 2),
+              segmentLength     = length / numberOfSegments,
+              segmentOffsetMin  = -40,
+              segmentOffsetMax  = 40,
+              amplitudeMin      = 5,
+              amplitudeMax      = 18,
+              hueMin            = 200,
+              hueMax            = 240,
+              satMin            = 80,
+              satMax            = 90,
+              lightnessMin      = 40,
+              lightnessMax      = 90;
+
+          for (var line = 0; line < numberOfLines; ++line) {
+
+            var h = rand(hueMin, hueMax),
+                s = rand(satMin, satMax),
+                l = rand(lightnessMin, lightnessMax);
+
+            ctx.strokeStyle = 'hsl(' + h + ',' + s + '%,' + l + '%)';
+            ctx.lineCap = 'round';
+
+            ctx.lineWidth = 2 + Math.random() * 2;
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+
+            var targetX = 0;
+            var initialDirection = (line & 1) ? 1 : -1;
+            
+            for (var segment = 0; segment < numberOfSegments; ++segment) {
+
+              targetX += segmentLength;
+
+              var x = targetX + rand(segmentOffsetMin, segmentOffsetMax);
+              
+              var y = rand(amplitudeMin, amplitudeMax) * initialDirection;
+              if (segment & 1) {
+                y = -y;
+              }
+
+              ctx.lineTo(x, y);
+
+            }
+
+            ctx.stroke();
+        
+          }
+
+          ctx.restore();
+
+
+        }
+
+        window.requestAnimationFrame(_tick);
+
+      });
+
+    }
+  </script>
+</head>
+<body onload='init();'>
+  <canvas id='canvas' width='800' height='600' style='background-color: #303030'></canvas>
+</body>
+</html>
