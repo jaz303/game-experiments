@@ -1,0 +1,2 @@
+python -m SimpleHTTPServer 9000
+watchify -o bundle.js main.js
